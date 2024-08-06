@@ -47,7 +47,13 @@ class PetApiService implements PetApiServiceInterface
 			$response = $this->client->$method($endpoint, $options);
 			return json_decode($response->getBody()->getContents(), true);
 		} catch (RequestException $e) {
-			throw new \Exception('API request failed: ' . $e->getMessage());
+			if ($e->hasResponse()) {
+				$responseBody = json_decode($e->getResponse()->getBody()->getContents(), true);
+				if (isset($responseBody['message'])) {
+					throw new \Exception($responseBody['message']);
+				}
+			}
+			throw new \Exception('Wystąpił błąd podczas wykonywania żądania.');
 		}
 	}
 }
